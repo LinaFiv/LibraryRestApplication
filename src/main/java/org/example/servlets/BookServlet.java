@@ -6,37 +6,36 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.models.Person;
-import org.example.services.PersonService;
-import org.example.services.impl.PersonServiceImpl;
-import org.example.servlets.DTO.PersonRequestDTO;
-import org.example.servlets.DTO.PersonResponseDTO;
-import org.example.servlets.mapper.PersonMapper;
-import org.example.servlets.mapper.PersonMapperImpl;
+import org.example.models.Book;
+import org.example.services.BookService;
+import org.example.services.impl.BookServiceImpl;
+import org.example.servlets.DTO.BookRequestDTO;
+import org.example.servlets.DTO.BookResponseDTO;
+import org.example.servlets.mapper.BookMapper;
+import org.example.servlets.mapper.BookMapperImpl;
 import org.example.utils.ServletUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.UUID;
 
-@WebServlet(urlPatterns = "/person")
-public class PersonServlet extends HttpServlet {
+@WebServlet(urlPatterns = "/book")
+public class BookServlet extends HttpServlet {
+    private BookService bookService;
+    private BookMapper bookMapper;
 
-    private PersonService personService;
-    private PersonMapper personMapper;
-
-    public PersonServlet() {
+    public BookServlet() {
     }
 
-    public PersonServlet(PersonService personService, PersonMapper personMapper) {
-        this.personService = personService;
-        this.personMapper = personMapper;
+    public BookServlet(BookService bookService, BookMapper bookMapper) {
+        this.bookService = bookService;
+        this.bookMapper = bookMapper;
     }
 
     @Override
     public void init() throws ServletException {
-        personService = new PersonServiceImpl();
-        personMapper = new PersonMapperImpl();
+        bookService = new BookServiceImpl();
+        bookMapper = new BookMapperImpl();
     }
 
     @Override
@@ -51,24 +50,23 @@ public class PersonServlet extends HttpServlet {
         }
 
         try {
-            Person person = personService.findById(UUID.fromString(id));
+            Book book = bookService.findById(UUID.fromString(id));
 
-            if (person == null) {
-                writer.write("Person not found by ID " + id);
+            if (book == null) {
+                writer.write("Book not found by ID " + id);
                 resp.setStatus(404);
                 return;
             }
 
-            PersonResponseDTO personResponseDTO = personMapper.mapToResponseDTO(person);
+            BookResponseDTO bookResponseDTO = bookMapper.mapToResponseDto(book);
             ObjectMapper objectMapper = new ObjectMapper();
-            String personJson = objectMapper.writeValueAsString(personResponseDTO);
+            String bookJson = objectMapper.writeValueAsString(bookResponseDTO);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.setStatus(200);
-            writer.write(personJson);
-
+            writer.write(bookJson);
         } catch (IllegalArgumentException e) {
-            writer.write("Invalid person ID");
+            writer.write("Invalid book ID");
             resp.setStatus(400);
         }
     }
@@ -79,16 +77,16 @@ public class PersonServlet extends HttpServlet {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String requestBody = ServletUtil.getRequestBody(req.getReader());
-        PersonRequestDTO personRequestDTO = objectMapper.readValue(requestBody, PersonRequestDTO.class);
+        BookRequestDTO bookRequestDTO = objectMapper.readValue(requestBody, BookRequestDTO.class);
 
-        Person person = personMapper.mapToEntity(personRequestDTO);
-        Person createPerson = personService.create(person);
-        PersonResponseDTO personResponseDTO = personMapper.mapToResponseDTO(createPerson);
-        String personJson = objectMapper.writeValueAsString(personResponseDTO);
+        Book book = bookMapper.mapToEntity(bookRequestDTO);
+        Book createBook = bookService.create(book);
+        BookResponseDTO bookResponseDTO = bookMapper.mapToResponseDto(createBook);
+        String bookJson = objectMapper.writeValueAsString(bookResponseDTO);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.setStatus(200);
-        writer.write(personJson);
+        writer.write(bookJson);
     }
 
     @Override
@@ -105,25 +103,24 @@ public class PersonServlet extends HttpServlet {
 
         try {
             String requestBody = ServletUtil.getRequestBody(req.getReader());
-            PersonRequestDTO personRequestDTO = objectMapper.readValue(requestBody, PersonRequestDTO.class);
+            BookRequestDTO bookRequestDTO = objectMapper.readValue(requestBody, BookRequestDTO.class);
 
-            if (personService.findById(UUID.fromString(id)) == null) {
-                writer.write("Person not found by ID " + id);
+            if (bookService.findById(UUID.fromString(id)) == null) {
+                writer.write("Book not found by ID " + id);
                 resp.setStatus(404);
                 return;
             }
 
-            Person person = personMapper.mapToEntity(personRequestDTO);
-            Person updatePerson = personService.updateById(UUID.fromString(id), person);
-            PersonResponseDTO personResponseDTO = personMapper.mapToResponseDTO(updatePerson);
-            String personJson = objectMapper.writeValueAsString(personResponseDTO);
+            Book book = bookMapper.mapToEntity(bookRequestDTO);
+            Book updateBook = bookService.updateById(UUID.fromString(id), book);
+            BookResponseDTO bookResponseDTO = bookMapper.mapToResponseDto(updateBook);
+            String bookJson = objectMapper.writeValueAsString(bookResponseDTO);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.setStatus(200);
-            writer.write(personJson);
-
+            writer.write(bookJson);
         } catch (IllegalArgumentException e) {
-            writer.write("Invalid person ID");
+            writer.write("Invalid book ID");
             resp.setStatus(400);
         }
     }
@@ -140,18 +137,17 @@ public class PersonServlet extends HttpServlet {
         }
 
         try {
-            if (personService.findById(UUID.fromString(id)) == null) {
-                writer.write("Person not found by ID " + id);
+            if (bookService.findById(UUID.fromString(id)) == null) {
+                writer.write("Book not found by ID " + id);
                 resp.setStatus(404);
                 return;
             }
 
-            personService.delete(UUID.fromString(id));
-            writer.write("Person was deleted successfully by ID " + id);
+            bookService.delete(UUID.fromString(id));
+            writer.write("Book was deleted successfully by ID " + id);
             resp.setStatus(200);
-
         } catch (IllegalArgumentException e) {
-            writer.write("Invalid person ID");
+            writer.write("Invalid book ID");
             resp.setStatus(400);
         }
     }
